@@ -1,7 +1,7 @@
 const { resolve: resolvePath } = require('path')
 const fs = require('fs')
 
-const { app, clipboard, BrowserWindow, Menu, MenuItem, dialog } = require('electron')
+const { app, session, clipboard, BrowserWindow, Menu, MenuItem, dialog } = require('electron')
 const Store = require('electron-store')
 const DiscordRPC = require('discord-rpc')
 const open = require('open')
@@ -41,7 +41,7 @@ const DISCORD_PRESENCE = {
 /**
  * @type BrowserWindow
  */
-let mainWindow;
+let mainWindow
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -56,7 +56,7 @@ function createWindow() {
     }
     e.preventDefault()
     open(url.toString())
-  });
+  })
 
   mainWindow.loadURL(PXLS_URL_BASE)
     .then(injectUserExts)
@@ -92,7 +92,7 @@ function createWindow() {
         click: () => {
           const url = new URL(clipboard.readText())
           if (url.host !== PXLS_HOST || url.pathname !== '/') {
-            return;
+            return
           }
 
           mainWindow.webContents.loadURL(url.toString())
@@ -124,7 +124,7 @@ function createWindow() {
 
 function injectUserExts() {
   if (!fs.existsSync(userextsDirPath)) {
-    return;
+    return
   }
 
   for (const filename of fs.readdirSync(userextsDirPath)) {
@@ -168,7 +168,18 @@ async function clearDiscordActivity(args) {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', () => {
+  // Patch Google User-Agent so it lets us authenticate
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: [ 'https://accounts.google.com/o/oauth2/*' ] },
+    (details, callback) => {
+      details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'
+      callback({ requestHeaders: details.requestHeaders })
+    }
+  )
+
+  createWindow()
+})
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
