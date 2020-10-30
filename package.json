@@ -20,7 +20,16 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "./src/favicon.ico"
+        "icon": "./src/favicon.ico",
+        "prune": true,
+        "ignore": [
+          "\\.vscode",
+          "userexts",
+          "pxls-url\\.txt",
+          "README\\.md",
+          "\\.gitignore",
+          "package-lock.json|yarn.lock"
+        ]
       },
       "makers": [
         {
