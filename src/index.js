@@ -104,11 +104,16 @@ function createWindow() {
     ]
   }))
   menu.append(new MenuItem({
-    label: 'Open userexts folder',
-    click: () => open(userextsDirPath)
-  }))
-  menu.append(new MenuItem({
-    role: 'toggleDevTools'
+    label: 'Developer',
+    submenu: [
+      {
+        label: 'Open userexts Folder',
+        click: () => open(userextsDirPath)
+      },
+      {
+        role: 'toggleDevTools'
+      }
+    ]
   }))
 
   mainWindow.setMenu(menu)
