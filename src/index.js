@@ -1,15 +1,11 @@
 const { resolve: resolvePath } = require('path')
 const fs = require('fs')
 
-const { app, session, clipboard, BrowserWindow, Menu, MenuItem, dialog } = require('electron')
+const { app, clipboard, dialog, session, BrowserWindow, Menu, MenuItem } = require('electron')
 const Store = require('electron-store')
 const DiscordRPC = require('discord-rpc')
 const open = require('open')
 
-
-const PXLS_PROTOCOL = 'https'
-const PXLS_HOST = 'pxls.space'
-const PXLS_URL_BASE = `${PXLS_PROTOCOL}://${PXLS_HOST}`
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) { // eslint-disable-line global-require
@@ -21,6 +17,9 @@ const store = new Store({
     enableRichPresence: true
   }
 })
+
+const pxlsURL = readPxlsURL()
+console.info('Pxls URL:', pxlsURL.toString())
 
 const userextsDirPath = resolvePath(app.getAppPath(), 'userexts')
 if (!fs.existsSync(userextsDirPath)) {
@@ -51,14 +50,14 @@ function createWindow() {
 
   mainWindow.webContents.on('new-window', (e, urlStr) => {
     const url = new URL(urlStr)
-    if (url.host === PXLS_HOST) {
+    if (url.host === pxlsURL.host) {
       return
     }
     e.preventDefault()
     open(url.toString())
   })
 
-  mainWindow.loadURL(PXLS_URL_BASE)
+  mainWindow.loadURL(pxlsURL.toString())
     .then(injectUserExts)
 
   const menu = new Menu()
@@ -91,7 +90,7 @@ function createWindow() {
         label: 'Open template from clipboard',
         click: () => {
           const url = new URL(clipboard.readText())
-          if (url.host !== PXLS_HOST || url.pathname !== '/') {
+          if (url.host !== pxlsURL.host || url.pathname !== '/') {
             return
           }
 
@@ -163,6 +162,18 @@ async function clearDiscordActivity(args) {
       })
       return err
     })
+}
+
+function readPxlsURL() {
+  let s
+  try {
+    s = fs.readFileSync(resolvePath(app.getAppPath(), './pxls-url.txt'), { encoding: 'utf-8' }).trim()
+  } catch (err) {
+    console.error(err)
+    s = 'https://pxls.space'
+  }
+
+  return new URL(s)
 }
 
 // This method will be called when Electron has finished
