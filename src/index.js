@@ -62,6 +62,20 @@ function createWindow() {
 
   const menu = new Menu()
   menu.append(new MenuItem({
+    label: 'View',
+    submenu: [
+      {
+        role: 'reload'
+      },
+      {
+        role: 'forceReload'
+      },
+      {
+        role: 'togglefullscreen'
+      }
+    ]
+  }))
+  menu.append(new MenuItem({
     label: 'Rich Presence',
     submenu: [
       {
