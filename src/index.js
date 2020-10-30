@@ -121,6 +121,13 @@ function createWindow() {
     label: 'Developer',
     submenu: [
       {
+        label: 'Clear Storage Data',
+        click: () => {
+          const session = mainWindow.webContents.session
+          session.clearStorageData().then(() => mainWindow.webContents.reload())
+        }
+      },
+      {
         label: 'Open userexts Folder',
         click: () => open(userextsDirPath)
       },
